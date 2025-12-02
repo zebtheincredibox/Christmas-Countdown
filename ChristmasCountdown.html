@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epic Christmas Countdown</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap');
+
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Mountains of Christmas', cursive;
+    background: linear-gradient(120deg, #ff0000, #00ff00, #ffff00);
+    background-size: 600% 600%;
+    animation: gradientShift 20s ease infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+  }
+
+  @keyframes gradientShift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  .countdown {
+    text-align: center;
+    font-size: 4rem;
+    text-shadow: 0 0 20px #fff, 0 0 30px #ff0, 0 0 40px #f0f;
+    animation: flash 1s infinite alternate;
+  }
+
+  @keyframes flash {
+    0% { text-shadow: 0 0 10px #fff, 0 0 20px #ff0; color: #ff0; }
+    50% { text-shadow: 0 0 30px #fff, 0 0 40px #f0f; color: #f0f; }
+    100% { text-shadow: 0 0 50px #fff, 0 0 60px #0ff; color: #0ff; }
+  }
+
+  .snowflake {
+    position: absolute;
+    top: -10px;
+    color: white;
+    font-size: 1rem;
+    user-select: none;
+    pointer-events: none;
+    animation: fall linear infinite;
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="countdown" id="countdown">
+  🎄 Loading Christmas Countdown... 🎄
+</div>
+
+<script>
+  // Set Christmas date
+  const christmas = new Date(new Date().getFullYear(), 11, 25, 0, 0, 0); // Dec 25, 00:00
+
+  // Generate snowflakes
+  function createSnowflake() {
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    snowflake.textContent = '❄';
+    snowflake.style.left = Math.random() * window.innerWidth + 'px';
+    snowflake.style.fontSize = (Math.random() * 20 + 10) + 'px';
+    snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    document.body.appendChild(snowflake);
+    setTimeout(() => snowflake.remove(), 10000);
+  }
+
+  setInterval(createSnowflake, 200);
+
+  // Countdown logic
+  function updateCountdown() {
+    const now = new Date();
+    let diff = christmas - now;
+
+    // If Christmas already passed, target next year
+    if(diff < 0) {
+      const nextChristmas = new Date(now.getFullYear() + 1, 11, 25, 0, 0, 0);
+      diff = nextChristmas - now;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    const countdownText = `
+      🎄 ${days} Days 🎅<br>
+      ${hours} Hours 🕒<br>
+      ${minutes} Minutes ⏳<br>
+      ${seconds} Seconds ❄
+    `;
+
+    document.getElementById('countdown').innerHTML = countdownText;
+  }
+
+  setInterval(updateCountdown, 1000);
+  updateCountdown(); // initial call
+</script>
+</body>
+</html>
