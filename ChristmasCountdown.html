@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mobile Christmas Countdown</title>
+<title>Lightweight Christmas Countdown</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap');
 
@@ -12,9 +12,7 @@
     padding: 0;
     overflow: hidden;
     font-family: 'Mountains of Christmas', cursive;
-    background: linear-gradient(120deg, #ff0000, #00ff00, #ffff00);
-    background-size: 600% 600%;
-    animation: gradientShift 20s ease infinite;
+    background: #2a2a2a; /* simple dark background */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -23,23 +21,17 @@
     text-align: center;
   }
 
-  @keyframes gradientShift {
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:0% 50%}
-  }
-
   .countdown {
-    font-size: 12vw; /* scales with screen width */
-    text-shadow: 0 0 10px #fff, 0 0 15px #ff0, 0 0 20px #f0f;
+    font-size: 12vw;
+    text-shadow: 0 0 10px #fff, 0 0 15px #ff0;
     animation: flash 1s infinite alternate;
     line-height: 1.2;
   }
 
   @keyframes flash {
-    0% { text-shadow: 0 0 5px #fff, 0 0 10px #ff0; color: #ff0; }
-    50% { text-shadow: 0 0 15px #fff, 0 0 20px #f0f; color: #f0f; }
-    100% { text-shadow: 0 0 25px #fff, 0 0 30px #0ff; color: #0ff; }
+    0% { color: #ff0; }
+    50% { color: #f0f; }
+    100% { color: #0ff; }
   }
 
   .snowflake {
@@ -48,12 +40,6 @@
     color: white;
     user-select: none;
     pointer-events: none;
-    animation: fall linear infinite;
-  }
-
-  @keyframes fall {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
   }
 </style>
 </head>
@@ -64,19 +50,78 @@
 </div>
 
 <script>
+  const countdownEl = document.getElementById('countdown');
   const christmas = new Date(new Date().getFullYear(), 11, 25, 0, 0, 0);
 
-  function createSnowflake() {
-    const snowflake = document.createElement('div');
-    snowflake.classList.add('snowflake');
-    snowflake.textContent = '❄';
-    snowflake.style.left = Math.random() * window.innerWidth + 'px';
-    snowflake.style.fontSize = (Math.random() * 8 + 12) + 'px'; // smaller for mobile
-    snowflake.style.animationDuration = (Math.random() * 3 + 4) + 's';
-    document.body.appendChild(snowflake);
-    setTimeout(() => snowflake.remove(), 7000);
+  // Countdown
+  function updateCountdown() {
+    const now = new Date();
+    let diff = christmas - now;
+    if (diff < 0) {
+      const nextChristmas = new Date(now.getFullYear() + 1, 11, 25, 0, 0, 0);
+      diff = nextChristmas - now;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    countdownEl.innerHTML = `
+      🎄 ${days} Days 🎅<br>
+      ${hours} Hours 🕒<br>
+      ${minutes} Minutes ⏳<br>
+      ${seconds} Seconds ❄
+    `;
   }
 
+  // Smooth countdown with requestAnimationFrame
+  function countdownLoop() {
+    updateCountdown();
+    requestAnimationFrame(countdownLoop);
+  }
+  countdownLoop();
+
+  // Snowflake animation
+  const snowflakes = [];
+  const maxFlakes = 20; // reduce number of snowflakes
+
+  function createSnowflake() {
+    if (snowflakes.length >= maxFlakes) return;
+
+    const snowflake = document.createElement('div');
+    snowflake.className = 'snowflake';
+    snowflake.textContent = '❄';
+    snowflake.style.left = Math.random() * window.innerWidth + 'px';
+    snowflake.style.fontSize = (Math.random() * 12 + 8) + 'px';
+    snowflake.speed = Math.random() * 1 + 0.5;
+    snowflake.y = -20;
+    snowflake.x = parseFloat(snowflake.style.left);
+    document.body.appendChild(snowflake);
+    snowflakes.push(snowflake);
+  }
+
+  function animateSnowflakes() {
+    for (let i = 0; i < snowflakes.length; i++) {
+      const flake = snowflakes[i];
+      flake.y += flake.speed;
+      flake.style.top = flake.y + 'px';
+
+      if (flake.y > window.innerHeight) {
+        flake.y = -20;
+        flake.x = Math.random() * window.innerWidth;
+        flake.style.left = flake.x + 'px';
+      }
+    }
+    requestAnimationFrame(animateSnowflakes);
+  }
+
+  setInterval(createSnowflake, 400); // fewer flakes
+  animateSnowflakes();
+</script>
+
+</body>
+</html>
   setInterval(createSnowflake, 150);
 
   function updateCountdown() {
