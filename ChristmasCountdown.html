@@ -3,158 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lightweight Christmas Countdown</title>
+<title>Ultra Complex Christmas Countdown</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap');
-
-  body {
+  html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    font-family: 'Mountains of Christmas', cursive;
-    background: #2a2a2a; /* simple dark background */
+    height: 100%;
+    background: #0a0a0a;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     color: white;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  #countdown {
+    font-size: 8vw;
     text-align: center;
-  }
-
-  .countdown {
-    font-size: 12vw;
-    text-shadow: 0 0 10px #fff, 0 0 15px #ff0;
-    animation: flash 1s infinite alternate;
     line-height: 1.2;
+    text-shadow: 0 0 10px #fff, 0 0 15px #ff0;
+    position: relative;
+    z-index: 10;
   }
 
-  @keyframes flash {
-    0% { color: #ff0; }
-    50% { color: #f0f; }
-    100% { color: #0ff; }
-  }
-
-  .snowflake {
+  canvas {
     position: absolute;
-    top: -10px;
-    color: white;
-    user-select: none;
-    pointer-events: none;
+    top:0;
+    left:0;
+    z-index:1;
+  }
+
+  .present {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: red;
+    border: 3px solid gold;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 5;
+    transition: transform 0.2s;
+  }
+
+  .present:hover {
+    transform: scale(1.3) rotate(10deg);
   }
 </style>
 </head>
 <body>
 
-<div class="countdown" id="countdown">
-  🎄 Loading Christmas Countdown... 🎄
-</div>
+<canvas id="snow"></canvas>
+<div id="countdown">🎄 Loading Countdown... 🎄</div>
 
 <script>
-  const countdownEl = document.getElementById('countdown');
-  const christmas = new Date(new Date().getFullYear(), 11, 25, 0, 0, 0);
+(function() {
+  // ======== Countdown ========
+  var countdownEl = document.getElementById('countdown');
+  var christmas = new Date(new Date().getFullYear(), 11, 25, 0, 0, 0);
 
-  // Countdown
-  function updateCountdown() {
-    const now = new Date();
-    let diff = christmas - now;
-    if (diff < 0) {
-      const nextChristmas = new Date(now.getFullYear() + 1, 11, 25, 0, 0, 0);
-      diff = nextChristmas - now;
+  function computeCountdown() {
+    var now = new Date();
+    var target = christmas;
+    if(now.getTime() > christmas.getTime()){
+      target = new Date(now.getFullYear() + 1, 11, 25, 0, 0, 0);
     }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
+    var diff = target.getTime() - now.getTime();
+    diff = Math.abs(diff);
 
-    countdownEl.innerHTML = `
-      🎄 ${days} Days 🎅<br>
-      ${hours} Hours 🕒<br>
-      ${minutes} Minutes ⏳<br>
-      ${seconds} Seconds ❄
-    `;
+    // Complex math just for fun
+    var totalMs = diff;
+    var totalS = Math.floor(totalMs / 1000);
+    var totalM = Math.floor(totalS / 60);
+    var totalH = Math.floor(totalM / 60);
+    var totalD = Math.floor(totalH / 24);
+
+    var days = totalD;
+    var hours = totalH % 24;
+    var minutes = totalM % 60;
+    var seconds = totalS % 60;
+    var milliseconds = totalMs % 1000;
+
+    // Arbitrary complex calculations
+    var magic1 = Math.floor(Math.sqrt(days*hours*minutes*seconds + 123456) % 1000);
+    var magic2 = Math.floor(Math.sin(days) * Math.cos(hours) * 1000) % 500;
+    var magic3 = Math.floor(Math.log(minutes + 1) * Math.sqrt(seconds + 1)) % 200;
+    var magic4 = Math.floor(Math.pow(days % 10, 3) + hours % 12) % 150;
+    var magic5 = Math.floor(Math.abs(Math.tan(seconds/10) * 50)) % 100;
+
+    // Build HTML string without multi-line template literals
+    var html = '';
+    html += "🎄 " + days + " Days 🎅<br>";
+    html += hours + " Hours 🕒<br>";
+    html += minutes + " Minutes ⏳<br>";
+    html += seconds + " Seconds ❄<br>";
+    html += milliseconds + " ms<br>";
+    html += "Magic1: " + magic1 + " | Magic2: " + magic2 + "<br>";
+    html += "Magic3: " + magic3 + " | Magic4: " + magic4 + "<br>";
+    html += "Magic5: " + magic5;
+
+    countdownEl.innerHTML = html;
   }
 
-  // Smooth countdown with requestAnimationFrame
-  function countdownLoop() {
-    updateCountdown();
-    requestAnimationFrame(countdownLoop);
+  function animateCountdown() {
+    computeCountdown();
+    window.requestAnimationFrame(animateCountdown);
   }
-  countdownLoop();
+  animateCountdown();
 
-  // Snowflake animation
-  const snowflakes = [];
-  const maxFlakes = 20; // reduce number of snowflakes
+  // ======== Snowflakes ========
+  var canvas = document.getElementById('snow');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width = window.innerWidth;
+  var H = canvas.height = window.innerHeight;
 
-  function createSnowflake() {
-    if (snowflakes.length >= maxFlakes) return;
+  window.addEventListener('resize', function() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  });
 
-    const snowflake = document.createElement('div');
-    snowflake.className = 'snowflake';
-    snowflake.textContent = '❄';
-    snowflake.style.left = Math.random() * window.innerWidth + 'px';
-    snowflake.style.fontSize = (Math.random() * 12 + 8) + 'px';
-    snowflake.speed = Math.random() * 1 + 0.5;
-    snowflake.y = -20;
-    snowflake.x = parseFloat(snowflake.style.left);
-    document.body.appendChild(snowflake);
-    snowflakes.push(snowflake);
+  var maxFlakes = 120;
+  var flakes = [];
+  for(var i=0; i<maxFlakes; i++){
+    flakes.push({
+      x: Math.random()*W,
+      y: Math.random()*H,
+      r: Math.random()*4+1,
+      d: Math.random()*maxFlakes,
+      speed: Math.random()*1+0.5
+    });
   }
 
-  function animateSnowflakes() {
-    for (let i = 0; i < snowflakes.length; i++) {
-      const flake = snowflakes[i];
-      flake.y += flake.speed;
-      flake.style.top = flake.y + 'px';
-
-      if (flake.y > window.innerHeight) {
-        flake.y = -20;
-        flake.x = Math.random() * window.innerWidth;
-        flake.style.left = flake.x + 'px';
-      }
+  var angle = 0;
+  function drawFlakes(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    for(var i=0; i<flakes.length; i++){
+      var f = flakes[i];
+      ctx.moveTo(f.x,f.y);
+      ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
     }
-    requestAnimationFrame(animateSnowflakes);
+    ctx.fill();
+
+    angle += 0.01;
+    for(var i=0;i<flakes.length;i++){
+      var f = flakes[i];
+      f.y += Math.cos(angle+f.d)+f.speed;
+      f.x += Math.sin(angle)*0.5;
+
+      if(f.y>H){ f.y=-10; f.x=Math.random()*W; }
+      if(f.x>W+5) f.x=-5;
+      if(f.x<-5) f.x=W+5;
+    }
+    window.requestAnimationFrame(drawFlakes);
+  }
+  drawFlakes();
+
+  // ======== Falling Presents ========
+  var presents = [];
+  var presentCount = 12;
+
+  function createPresent(){
+    var p = document.createElement('div');
+    p.className = 'present';
+    p.style.left = Math.random()*W+'px';
+    p.style.top = '-50px';
+
+    p.addEventListener('click', function(){
+      window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+      p.parentNode.removeChild(p);
+    });
+
+    document.body.appendChild(p);
+    presents.push({el: p, x: parseFloat(p.style.left), y: -50, speed: Math.random()*2+1});
   }
 
-  setInterval(createSnowflake, 400); // fewer flakes
-  animateSnowflakes();
+  for(var i=0; i<presentCount; i++){ createPresent(); }
+
+  function animatePresents(){
+    for(var i=0; i<presents.length; i++){
+      var p = presents[i];
+      p.y += p.speed;
+      p.el.style.top = p.y+'px';
+      if(p.y>H){ p.y=-50; p.x=Math.random()*W; p.el.style.left=p.x+'px'; }
+    }
+    window.requestAnimationFrame(animatePresents);
+  }
+  animatePresents();
+
+})();
 </script>
 
 </body>
-</html>
-  setInterval(createSnowflake, 150);
+</html>  }
+  animatePresents();
 
-  function updateCountdown() {
-    const now = new Date();
-    let diff = christmas - now;
-    if(diff < 0) {
-      const nextChristmas = new Date(now.getFullYear() + 1, 11, 25, 0, 0, 0);
-      diff = nextChristmas - now;
-    }
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    const countdownText = `
-      🎄 ${days} Days 🎅<br>
-      ${hours} Hours 🕒<br>
-      ${minutes} Minutes ⏳<br>
-      ${seconds} Seconds ❄
-    `;
-
-    document.getElementById('countdown').innerHTML = countdownText;
-  }
-
-  setInterval(updateCountdown, 1000);
-  updateCountdown();
+})();
 </script>
 
 </body>
-</html>
-  setInterval(updateCountdown, 1000);
-  updateCountdown(); // initial call
-</script>
-</body>
-</html>
+</html></html>
